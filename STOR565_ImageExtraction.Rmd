@@ -1,0 +1,288 @@
+---
+title: "STOR565 Final Project EDA (PCA)"
+output:
+  html_document:
+  latex_engine: xelatex
+  pdf_document: default
+date: "2023-03-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Testing
+
+```{r}
+library(magick)
+library(jpeg)
+# no.tumor1 = jpeg::readJPEG("C:/Users/Oscar/Downloads/BrainTumorClass/Training/no_tumor/1.jpg")
+# no.tumor2 = jpeg::readJPEG("C:/Users/Oscar/Downloads/BrainTumorClass/Training/no_tumor/2.jpg")
+# no.tumor3= jpeg::readJPEG("C:/Users/Oscar/Downloads/BrainTumorClass/Training/no_tumor/image (11).jpg")
+
+# no.tumor1 = image_read("C:/Users/Oscar/Downloads/BrainTumorClass/Training/no_tumor/1.jpg")
+# no.tumor1 = image_scale(no.tumor1,"512x512!")
+# setwd("C:/Users/Oscar/Downloads/")
+# image_write(no.tumor1, path = "notumor.jpg", format = "jpg")
+```
+
+## Extract Images
+
+```{r}
+#List of no_tumor files
+path <- "C:/Users/Oscar/Downloads/BrainTumorClass/Training/no_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+no.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  no.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+#glioma_tumor
+path <- "C:/Users/Oscar/Downloads/BrainTumorClass/Training/glioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+glioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  glioma.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+#meningioma_tumor
+path <- "C:/Users/Oscar/Downloads/BrainTumorClass/Training/meningioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+meningioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  meningioma.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+#pituitary_tumor
+path <- "C:/Users/Oscar/Downloads/BrainTumorClass/Training/pituitary_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+pituitary.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  pituitary.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+```
+
+## Consider image dimensions
+
+```{r}
+tumor = c(no.tumor,glioma.tumor,meningioma.tumor,pituitary.tumor)
+rows = rep(NA,length(tumor))
+for(i in 1:length(tumor)){
+  rows[i]=nrow(tumor[[i]])
+}
+
+cols = rep(NA,length(tumor))
+for(i in 1:length(tumor)){
+  cols[i]=ncol(tumor[[i]])
+}
+
+# Most images are square
+median(rows/cols)
+hist(rows/cols)
+
+# Underestimated size of data
+# len = round(median(rows))
+# wid = round(median(cols))
+```
+
+## Rescale (Simplify) Images
+
+```{r, warning=FALSE}
+library(magick)
+
+#List of no_tumor files
+path <- "C:/Users/Oscar/Downloads/BrainTumorClass/Training/no_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/Oscar/Downloads/RBrainTumorClass/Training/no_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+#List of glioma_tumor files
+path <- "C:/Users/Oscar/Downloads/BrainTumorClass/Training/glioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/Oscar/Downloads/RBrainTumorClass/Training/glioma_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+#List of meningioma_tumor files
+path <- "C:/Users/Oscar/Downloads/BrainTumorClass/Training/meningioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/Oscar/Downloads/RBrainTumorClass/Training/meningioma_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+#List of pituitary_tumor files
+path <- "C:/Users/Oscar/Downloads/BrainTumorClass/Training/pituitary_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/Oscar/Downloads/RBrainTumorClass/Training/pituitary_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+```
+
+## New Extracted Images
+
+```{r}
+rm(list = ls())
+library(jpeg)
+#List of no_tumor files
+path <- "C:/Users/Oscar/Downloads/RBrainTumorClass/Training/no_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+no.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  no.tumor[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+#glioma_tumor
+path <- "C:/Users/Oscar/Downloads/RBrainTumorClass/Training/glioma_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+glioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  glioma.tumor[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+#meningioma_tumor
+path <- "C:/Users/Oscar/Downloads/RBrainTumorClass/Training/meningioma_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+meningioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  meningioma.tumor[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+#pituitary_tumor
+path <- "C:/Users/Oscar/Downloads/RBrainTumorClass/Training/pituitary_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+pituitary.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  pituitary.tumor[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+```
+
+## PCA
+
+```{r}
+tumor = c(no.tumor,glioma.tumor,meningioma.tumor,pituitary.tumor)
+brains = data.frame(tumor = c(rep("no_tumor",length(no.tumor)),
+                              rep("glioma_tumor",length(glioma.tumor)),
+                              rep("meningioma_tumor",
+                                  length(meningioma.tumor)),
+                              rep("pituitary_tumor",
+                                  length(pituitary.tumor))))
+
+pixel = matrix(data = rep(NA, length(tumor)*100*100),
+                nrow = length(tumor),
+                ncol = 100*100)
+for(i in 1:100){
+  for(j in 1:100){
+    for(k in 1:length(tumor)){
+      which.col = 100*(i-1)+j
+      pixel[k,which.col] = tumor[[k]][i,j]
+      
+    }
+  }
+}
+```
+
+```{r,cache=TRUE}
+pca.brain = prcomp(pixel, scale = FALSE)
+var_explained_brain = data.frame(PC= paste0("PC",1:length(tumor)),                              var_explained=(pca.brain$sdev)^2/sum((pca.brain$sdev)^2),                   cum_explained=cumsum((pca.brain$sdev)^2)/sum((pca.brain$sdev)^2))
+```
+
+```{r}
+lastPC = min(which(var_explained_brain$cum_explained>.9))
+
+library(tidyverse)
+var_explained_brain[1:9,] %>%
+  ggplot(aes(x=PC,y=cum_explained, group=1))+
+  geom_point(size=4)+
+  geom_line()+
+  labs(title="Scree plot: cum explained")
+```
+
+```{r, warning=FALSE}
+PCN = c("tumor")
+for(i in 1:lastPC){
+  PC = pca.brain$x[,i]
+  brains = cbind(brains,PC)
+  PCN = append(PCN,paste0("PC",i))
+}
+colnames(brains)=PCN
+
+#pca plot
+library(ggplot2)
+ggplot(brains, aes(x=PC1, y=PC2, color=tumor)) + 
+    geom_point(size=2) 
+setwd("C:/Users/Oscar/Downloads/")
+```
+## Rotation Matrix
+
+PCA is computationally expensive, but necessary for dimensional reduction. However, if the testing set is used to calculate the rotation matrix, it may skew the error rate. Thus, it is important to consider how the rotation matrix may vary. Considering the variation is minimal, I will project onto the full training set. 
+
+```{r}
+pixel.train <- sample(2871,1000)
+pixelII <- pixel[pixel.train,]
+pca.brainII = prcomp(pixelII, scale = FALSE)
+
+pca.diff <- pca.brain$rotation[,1:lastPC]-pca.brainII$rotation[,1:lastPC]
+mean(pca.diff)
+```
+
+## KNN Classification Rate
+
+Determine optimal k, approximate with 5-fold cross-validation. Accuracy decreases as k increases, at a decreasing rate. Theory: since classification is based on closest image, KNN is heavily dependent upon similar images. This indicates the model is not robust to outliers, possible evidence of overfitting.
+```{r}
+library(class)
+knn.fcv <-function(df,k){
+  class.accuracy = rep(NA,5)
+  set = sample(rep(1:5,length.out=nrow(df)))
+  for(i in 1:5){
+    train = df[ifelse(set==i,F,T),]
+    test = df[ifelse(set==i,T,F),]
+    knn.pred = knn(train[,-1], test[,-1], train[,1], k)
+    class.accuracy[i] = mean(knn.pred == test[,1])
+  }
+  return(mean(class.accuracy))
+}
+
+possible.k = seq(1,101,2)
+accuracy.k = rep(NA,51)
+
+for(i in 1:51){
+  accuracy.k[i] = knn.fcv(brains,possible.k[i])
+}
+which.max(accuracy.k[1:10])
+accuracy.k[1:10]
+```
+
+```{r}
+knn.loocv = knn.cv(brains[,-1],brains[,1],which.max(accuracy.k))
+mean(knn.loocv==brains[,1])
+mean(knn.loocv[1:396]==brains[1:396,1])
+mean(knn.loocv[397:1222]==brains[397:1222,1])
+mean(knn.loocv[1222:2044]==brains[1222:2044,1])
+mean(knn.loocv[2045:2871]==brains[2045:2871,1])
+```
