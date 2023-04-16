@@ -1,0 +1,506 @@
+---
+title: "565 data analysis with Naive Bayse"
+output:
+  html_document:
+    df_print: paged
+---
+```{r, include = F}
+library(magick)
+library(jpeg)
+library(naivebayes)
+library(caret)
+```
+
+## 1. Train data to get the model and check
+
+## Extract Images
+### Using Oscar's code for extracting images from the file
+
+```{r, eval=F}
+#List of no_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/no_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+no.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  no.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+#glioma_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/glioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+glioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  glioma.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+#meningioma_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/meningioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+meningioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  meningioma.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+#pituitary_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/pituitary_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+pituitary.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  pituitary.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+```
+## Rescale (Simplify) Images
+
+```{r,eval=F}
+
+
+#List of no_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/no_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/no_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+#List of glioma_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/glioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/glioma_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+#List of meningioma_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/meningioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/meningioma_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+#List of pituitary_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/pituitary_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/pituitary_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+
+```
+
+### New Extracted Images
+
+```{r}
+
+library(jpeg)
+#List of no_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/no_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+no.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  no.tumor[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+#glioma_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/glioma_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+glioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  glioma.tumor[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+#meningioma_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/meningioma_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+meningioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  meningioma.tumor[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+#pituitary_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Training/pituitary_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+pituitary.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  pituitary.tumor[[i]] = readJPEG(paste0(path,files[i]))
+}
+```
+
+```{r}
+tumor = c(no.tumor,glioma.tumor,meningioma.tumor,pituitary.tumor)
+
+brains = data.frame(tumor = c(rep("no_tumor",length(no.tumor)),
+                              rep("glioma_tumor",length(glioma.tumor)),
+                              rep("meningioma_tumor",
+                                  length(meningioma.tumor)),
+                              rep("pituitary_tumor",
+                                  length(pituitary.tumor))))
+pixel = matrix(data = rep(NA, length(tumor)*100*100),
+                nrow = length(tumor),
+                ncol = 100*100) 
+
+for(i in 1:100){
+  for(j in 1:100){
+    for(k in 1:length(tumor)){
+      which.col = 100*(i-1)+j
+      pixel[k,which.col] = tumor[[k]][i,j]
+      
+    }
+  }
+}
+
+```
+
+```{r}
+# make unique names
+name<- NA
+for (i in 1:dim(pixel)[2]){
+name[i]<-paste0('V',i)
+}
+colnames(pixel) <- name
+
+table(brains$tumor) / length(brains$tumor)
+
+```
+```
+Shows the percentage of categorical data. Naive bayes automatically put this ratio in prior probility.
+```
+
+### Multinomial Naive bayes with training data
+
+```{r}
+set.seed(1)
+## Multinomial naive bayes(validation set)
+
+train <- sample(dim(pixel)[1],round(dim(pixel)[1]*0.7))
+test <- -sample(dim(pixel)[1],round(dim(pixel)[1]*0.7))
+
+pixel_train <- pixel[train,]
+pixel_test <- pixel[test,]
+
+# without prior, shows the best performance. what about just tumor or no tumor with naive_bayes???
+mnb <- multinomial_naive_bayes(x = pixel_train , y = brains$tumor[train])
+
+# the value seems not good enough not much accuracy.
+sum(brains$tumor[test] == predict(mnb,pixel_test))/length(brains$tumor[test])
+```
+```
+The value was not that good so I tried prior=c(0.25,0.25,0.25,0.25) but it shows worse one.
+```
+
+```{r}
+## Multinomial naive bayes(Cross Validation)
+cv <-sample(c(1:5), size = length(brains$tumor), replace = TRUE, prob = rep(0.2,5))
+mul_result <- NA
+for (i in 1:5){
+  
+  train <- cv!=i
+  test <-  cv==i
+
+  pixel_train <- pixel[train,]
+  pixel_test <- pixel[test,]
+
+  # without prior, shows the best performance. what about just tumor or no tumor with naive_bayes???
+  mnb <- multinomial_naive_bayes(x = pixel_train , y = brains$tumor[train])
+
+  # the value seems not good enough not much accuracy.
+  mul_result[i] <- sum(brains$tumor[test] == predict(mnb,pixel_test))/length(brains$tumor[test])
+  
+}
+
+mean(mul_result)
+
+```
+```
+After cross-validation, it shows better than one validation set but it is still not good enough.
+```
+
+### binary_naive_bayes with Training data
+
+```{r}
+# I wanted to see if just binary analysis could be better than this since the fact that there is tumor or not is firstly more important than the kind of tumor.
+binary_tumor <- brains$tumor
+
+binary_tumor[binary_tumor %in% c('glioma_tumor','meningioma_tumor','pituitary_tumor')] <- 'tumor'
+table(binary_tumor)
+
+#binary tumor prediction
+binary_mnb <- multinomial_naive_bayes(x = pixel_train , y = binary_tumor[train])
+
+# this shows much better performance than multiple_naive_bayes.
+sum(binary_tumor[test] == predict(binary_mnb,pixel_test))/length(brains$tumor[test])
+
+```
+```
+Showing much better performance than above one.
+```
+
+
+```{r}
+binary_result <- NA
+for (i in 1:5){
+  
+  train <- cv!=i
+  test <-  cv==i
+  
+  pixel_train <- pixel[train,]
+  pixel_test <- pixel[test,]
+
+  #binary tumor prediction
+  binary_mnb <- multinomial_naive_bayes(x = pixel_train , y = binary_tumor[train])
+
+  # this shows much better performance than multiple_naive_bayes.
+  binary_result[i] <- sum(binary_tumor[test] == predict(binary_mnb,pixel_test))/length(brains$tumor[test])
+  
+}
+
+mean(binary_result)
+```
+```
+I believe that the analysis that determins person has a tumor or not is more important than figuring out the kind of tumors. With this method, we could be highly accurate to know if a person has a tumor or not.
+```
+
+### PCA(the predict doesn't work. I need to figure out what the problem is) Gave up!!!!!!
+
+```{r, eval=F}
+# using PCA to see if it could have better performance.
+
+pca.brain = prcomp(pixel, scale = FALSE)
+
+dim(pca.brain$x)
+
+head(pca.brain$x[,1:10])
+
+which(cumsum(pca.brain$sdev) / sum(pca.brain$sdev) > .7)
+# it shows, from 790, the sum of variance is more than 0.7
+# so I decided to use 800 PCAs
+
+pca_pixel <- pca.brain$x
+
+dim(pca_pixel[train,])
+length(brains$tumor[train])
+
+#binary tumor prediction
+pca_mnb <- multinomial_naive_bayes(x = pca_pixel[train,] , y = brains$tumor[train])
+mnb$params
+pca_mnb$params
+# this shows much better performance than multiple_naive_bayes.
+# I don't know why it doesn't work...
+sum(brains$tumor[test] == predict(pca_mnb,pca_pixel[test,]))/length(brains$tumor[test])
+
+```
+
+## 2. accuracy check with test data.
+## Derive test data
+
+```{r,eval=F}
+#List of no_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing/no_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+no.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  no.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+#glioma_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing/glioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+glioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  glioma.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+#meningioma_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing/meningioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+meningioma.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  meningioma.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+#pituitary_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing/pituitary_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+pituitary.tumor <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  pituitary.tumor[[i]] = readJPEG(paste0(path,files[i]))[,,1]
+}
+
+```
+
+## Rescale (Simplify) test Images
+```{r,eval=F}
+library(magick)
+
+#List of no_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/no_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/no_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+#List of glioma_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/glioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/glioma_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+#List of meningioma_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/meningioma_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/meningioma_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+#List of pituitary_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/pituitary_tumor/"
+files <- list.files(path=path, pattern="*.jpg") 
+setwd("C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/pituitary_tumor/")
+
+for(i in files){
+  brain = image_read(paste0(path,i))
+  brain = image_scale(brain,"100x100!")
+  image_write(brain, path = i, format = "jpg")
+}
+
+
+```
+
+### New Extracted Images
+
+```{r}
+
+library(jpeg)
+#List of no_tumor files
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/no_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+no.tumor_test <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  no.tumor_test[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+#glioma_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/glioma_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+glioma.tumor_test <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  glioma.tumor_test[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+#meningioma_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/meningioma_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+meningioma.tumor_test <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  meningioma.tumor_test[[i]] = readJPEG(paste0(path,files[i]))
+}
+
+#pituitary_tumor
+path <- "C:/Users/marri/Desktop/건혁 - Copy/UNC/stor 565/final_data_analsis/Testing1/pituitary_tumor/"
+files <- list.files(path=path, pattern=".jpg") 
+pituitary.tumor_test <- list(rep(0,length(files)))
+
+for(i in 1:length(files)){
+  pituitary.tumor_test[[i]] = readJPEG(paste0(path,files[i]))
+}
+```
+
+```{r}
+tumor_test = c(no.tumor_test,glioma.tumor_test,meningioma.tumor_test,pituitary.tumor_test)
+
+brains_test = data.frame(tumor = c(rep("no_tumor",length(no.tumor_test)),
+                              rep("glioma_tumor",length(glioma.tumor_test)),
+                              rep("meningioma_tumor",
+                                  length(meningioma.tumor_test)),
+                              rep("pituitary_tumor",
+                                  length(pituitary.tumor_test))))
+pixel_test = matrix(data = rep(NA, length(tumor_test)*100*100),
+                nrow = length(tumor_test),
+                ncol = 100*100) 
+
+for(i in 1:100){
+  for(j in 1:100){
+    for(k in 1:length(tumor_test)){
+      which.col = 100*(i-1)+j
+      pixel_test[k,which.col] = tumor_test[[k]][i,j]
+      
+    }
+  }
+}
+
+```
+
+
+### accuracy with Mulinomial_naive_bayes
+
+```{r}
+# multinomial_naive_bayes
+colnames(pixel_test) <- name
+
+sum(brains_test$tumor==predict(mnb,pixel_test))/length(brains_test$tumor)
+```
+```
+Very low expectation.
+```
+
+### accuracy with binary_naive_bayes
+
+```{r}
+# binary_naiive _bayes
+binary_test <- brains_test$tumor
+binary_test[binary_test %in% c('glioma_tumor','meningioma_tumor','pituitary_tumor')] <- 'tumor'
+
+sum(binary_test==predict(binary_mnb,pixel_test))/length(binary_test)
+
+```
+```
+Still very low.. I need to find another way to solve this problem.
+```
+
+
+
+
+
+
